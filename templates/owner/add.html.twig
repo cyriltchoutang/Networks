@@ -1,0 +1,77 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Hello OwnerController!{% endblock %}
+
+{% block body %}
+
+ <div class="container">
+        <h1>Ajout de propriétaires</h1>
+
+        <div class="row">
+            <div class="col-md-6">
+                {# Afficher le formulaire de création d'un propriétaire #}
+                {{ form_start(form, {'attr': {'id': 'user-form'}}) }}
+                    <div class="mb-3">
+                        {{ form_row(form.firstname, {'attr': {'class': 'form-control'}}) }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form_row(form.lastname, {'attr': {'class': 'form-control'}}) }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form_row(form.save, {'attr': {'class': 'btn btn-primary'}}) }}
+                    </div>
+                {{ form_end(form) }}
+            </div>
+        </div>
+    </div>
+    <script>
+        const flashMessages = document.querySelectorAll('.alert');
+        const flashMessagesContainer = document.getElementById('flash-messages');
+
+        // Handle form submission with AJAX
+        document.getElementById('user-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const form = event.target;
+            const formData = new FormData(form);
+
+            fetch(form.action, {
+                method: form.method,
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+
+                if (data.status === 'success') {
+                    form.reset();  // Reset the form fields
+
+                    // Parcourir chaque message flash
+                    flashMessages.forEach(function(message) {
+                        // Vérifier le contenu du message et changer le texte en conséquence
+                            message.textContent = data.message;
+                    });
+                    flashMessagesContainer.classList.add('alert-success');
+
+                } else if (data.status === 'error') {
+                    // Parcourir chaque message flash
+                    flashMessages.forEach(function(message) {
+                        // Vérifier le contenu du message et changer le texte en conséquence
+                            message.textContent = data.message;
+                    });
+                    flashMessagesContainer.classList.add('alert-danger');
+                }
+                
+                flashMessagesContainer.style.display = 'block';
+                setTimeout(function() {
+                    flashMessagesContainer.style.display = 'none';
+                }, 2000);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+    </script>
+{% endblock %}

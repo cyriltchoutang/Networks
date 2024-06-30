@@ -1,0 +1,106 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Hello OwnerController!{% endblock %}
+
+
+{% block body %}
+
+<style>
+    .even-row {
+        background-color: gray !important /* Couleur de fond pour les lignes paires */
+    }
+
+    .odd-row {
+        background-color: #ffffff !important /* Couleur de fond pour les lignes impaires */
+    }
+</style>
+
+ <div class="container">
+    <h1>Liste de propriétaires</h1>
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Firstname</th>
+                <th>Lastname</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for owner in owners %}
+            {% set rowClass = cycle(['even-row', 'odd-row'], loop.index0) %}
+                <tr class="{{ rowClass }}">
+                    <td class="{{ rowClass }}">{{ loop.index }}</td>
+                    <td  contenteditable="true" data-owner-id="{{ owner.id }}" data-field="firstname">{{ owner.firstname }}</td>
+                    <td contenteditable="true" data-owner-id="{{ owner.id }}" data-field="lastname">{{ owner.lastname }}</td>
+                    <td>
+                        <a href="{{ path('owner_delete', {'id': owner.id}) }}" class="btn btn-danger btn-sm" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')">Supprimer</a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<script>
+    const flashMessages = document.querySelectorAll('.alert');
+    const flashMessagesContainer = document.getElementById('flash-messages');
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const editableCells = document.querySelectorAll('[contenteditable="true"]');
+
+        editableCells.forEach(cell => {
+            let originalValue = cell.innerText.trim(); // Valeur originale de la cellule
+
+            cell.addEventListener('blur', function() {
+                const ownerId = this.dataset.ownerId;
+                const field = this.dataset.field;
+                const value = this.innerText.trim();
+
+                if (value !== originalValue) {
+                // Envoi de la requête AJAX pour mettre à jour le propriétaire
+                fetch(`/owner/edit/${ownerId}`, {
+                    method: 'PATCH', // Utilisez PATCH pour les mises à jour partielles
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        [field]: value
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data)
+                    if (data.status === 'error') {
+                        // Parcourir chaque message flash
+                        flashMessages.forEach(function(message) {
+                            // Vérifier le contenu du message et changer le texte en conséquence
+                                message.textContent = data.message;
+                        });
+                        flashMessagesContainer.classList.add('alert-danger');
+                        throw new Error('Erreur lors de la mise à jour du propriétaire.');
+                    }
+
+                        // Parcourir chaque message flash
+                        flashMessages.forEach(function(message) {
+                            // Vérifier le contenu du message et changer le texte en conséquence
+                                message.textContent = data.message;
+                        });
+                        flashMessagesContainer.classList.add('alert-success');
+                    // Redirection vers la liste des propriétaires après la mise à jour réussie
+                    window.location.href = '{{ path('owner_list') }}';
+                })
+                .catch(error => {
+                    console.error('Erreur:', error);
+                    // Optionnel : Afficher un message d'erreur à l'utilisateur
+                });
+                // Mettre à jour la valeur originale après la modification
+                originalValue = value;
+                }
+            });
+        });
+    });
+</script>
+
+{% endblock %}

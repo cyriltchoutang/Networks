@@ -1,0 +1,93 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Hello VehicleController!{% endblock %}
+
+{% block body %}
+<style>
+    .example-wrapper { margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; }
+    .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
+</style>
+
+ <div class="container">
+        <h1>Ajout de véhicule</h1>
+
+        <div class="row">
+            <div class="col-md-6">
+                {# Afficher le formulaire de création d'un propriétaire #}
+                {{ form_start(form, {'attr': {'id': 'user-form'}}) }}
+                    <div class="mb-3">
+                        {{ form_row(form.mark, {'attr': {'class': 'form-control'}}) }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form_row(form.model, {'attr': {'class': 'form-control'}}) }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form_row(form.registrationNumber, {'attr': {'class': 'btn btn-primary'}}) }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form_row(form.characteristics, {'attr': {'class': 'form-control'}}) }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form_row(form.registrationDate, {'attr': {'class': 'form-control'}}) }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form_row(form.owner, {'attr': {'class': 'form-control'}}) }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form_row(form.save, {'attr': {'class': 'btn btn-primary'}}) }}
+                    </div>
+                {{ form_end(form) }}
+            </div>
+        </div>
+</div>
+<script>
+    const flashMessages = document.querySelectorAll('.alert');
+    const flashMessagesContainer = document.getElementById('flash-messages');
+
+    // Handle form submission with AJAX
+    document.getElementById('user-form').addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        const form = event.target;
+        const formData = new FormData(form);
+
+        fetch(form.action, {
+            method: form.method,
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+
+            if (data.status === 'success') {
+                form.reset();  // Reset the form fields
+
+                // Parcourir chaque message flash
+                flashMessages.forEach(function(message) {
+                    // Vérifier le contenu du message et changer le texte en conséquence
+                        message.textContent = data.message;
+                });
+                flashMessagesContainer.classList.add('alert-success');
+
+            } else if (data.status === 'error') {
+                // Parcourir chaque message flash
+                flashMessages.forEach(function(message) {
+                    // Vérifier le contenu du message et changer le texte en conséquence
+                        message.textContent = data.message;
+                });
+                flashMessagesContainer.classList.add('alert-danger');
+            }
+            
+            flashMessagesContainer.style.display = 'block';
+            setTimeout(function() {
+                flashMessagesContainer.style.display = 'none';
+            }, 2000);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    });
+</script>
+{% endblock %}
