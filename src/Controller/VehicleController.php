@@ -84,7 +84,7 @@ class VehicleController extends AbstractController
     }
 
     /**
-     * @Route("/vehicle/edit/{id}", name="owner_edit", methods={"PATCH"})
+     * @Route("/vehicle/edit/{id}", name="vehicle_edit", methods={"PATCH"})
      */
     public function editVehicle(int $id, Request $request,EntityManagerInterface $entityManager, OwnerRepository $ownerRepository): Response
     {
